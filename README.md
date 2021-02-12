@@ -31,7 +31,7 @@ The application can be invoked with ```node index.js```
 
 ## Links
 
-* The URL of a video that shows a typical user flow: https://drive.google.com/file/d/1RdKDdPe6VUklePnyGGEkPbgJst0_lo7g/view
+* The URL of a video that shows a typical user flow: https://drive.google.com/file/d/1EX5l1voDsFZhym4lQuCK3Ei-enksdMSR/view
 
 * The URLs of the GitHub repositories: https://github.com/mengyue-z/MySQL-Employee-Tracker
 
