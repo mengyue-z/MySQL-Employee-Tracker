@@ -1,6 +1,5 @@
 const mysql = require('mysql');
 const inquirer = require('inquirer');
-const cTable = require('console.table')
 
 const connection = mysql.createConnection({
   host: 'localhost',
@@ -37,7 +36,7 @@ const start = () => {
         'Delete departments',
         'Delete roles',
         'Delete employees',
-        'View the total utilized budget of a department'
+        'Exit'
       ],
     })
     .then((answer) => {
@@ -88,8 +87,8 @@ const start = () => {
         case 'Delete employees':
           deleteEmployees();
           break;
-        case 'View the total utilized budget of a department':
-          viewBudget();
+        case 'Exit':
+          connection.end();
           break;
 
         default:
@@ -266,54 +265,54 @@ const addEmployees = () => {
           });
         })
 }
+const updateRoles = () => {
+  connection.query('SELECT roles.title, employees.role_id, employees.first_name, employees.last_name, roles.id FROM roles LEFT JOIN employees ON roles.id = employees.id', (err, results) => {
+    if (err) throw err;
+    let roleArray = [];
+    let employeeArray = [];
+    results.forEach(({ title, role_id }) => {
+      roleArray.push({ name: `${title}`, value: `${role_id}` });
+    });
+    results.forEach(({ first_name, last_name, id }) => {
+      employeeArray.push({ name: `${first_name} ${last_name}`, value: `${id}` });
+    });
+    inquirer
+      .prompt([
+        {
+          name: 'employeeUpdate',
+          type: 'rawlist',
+          choices: employeeArray,
+          message: "Who do you want to update?"
+        },
+        {
+          name: 'selectedRole',
+          type: 'rawlist',
+          choices: roleArray,
+          message: "What is this employee's new role?",
+        }
+      ])
+      .then((answer) => {
+        console.log(answer.selectedRole)
+        connection.query(
+          'UPDATE employees SET ? WHERE ?',
+          [
+            {
+              id: answer.employeeUpdate,
+            },
+            {
+              role_id: answer.selectedRole,
+            },
+          ],
+            
+              console.log("You have successfully updated the employee's role!"));
+              start();
+        
+          
 
-  const updateRoles = () => {
-    connection.query('SELECT * FROM roles INNER JOIN employees ON roles.id = employees.role_id', (err, results) => {
-      if (err) throw err;
-      let roleArray = [];
-      let employeeArray = [];
-      results.forEach(({ title, role_id, first_name, last_name, id }) => {
-        roleArray.push({ name: `${title}`, value: `${role_id}` });
-        employeeArray.push({ name: `${first_name} ${last_name}`, value: `${id}` });
-      });
+      })
+  })
+}
 
-      inquirer
-        .prompt([
-          {
-            name: 'selectedEmployee',
-            type: 'rawlist',
-            choices: employeeArray,
-            message: "Who do you want to update?"
-          },
-          {
-            name: 'selectedRole',
-            type: 'rawlist',
-            choices: roleArray,
-            message: "What is this employee's new role?",
-          }
-        ])
-        .then((answer) => {
-          connection.query(
-            'UPDATE employees SET ? WHERE ?',
-            [
-              {
-                id: answer.selectedEmployee
-              },
-              {
-                role_id: answer.selectedRole,
-              },
-            ],
-            (error) => {
-              if (error) throw err;
-              else {
-                console.log(`\n ${answer.selectedEmployee}'s role has been updated to ${selectedRole}!`);
-                start();
-              }
-            })
-
-        })
-    })
-  }
   const updateManager = () => {
     const query = 'SELECT * FROM employees'
     connection.query(query, (err, results) => {
@@ -362,11 +361,19 @@ const addEmployees = () => {
   }
 
   const deleteDepts = () => {
+    const query = 'SELECT * FROM departments'
+    connection.query(query, (err, results) => {
+      if (err) throw err;
+      let deptArray = [];
+      results.forEach(({ department }) => {
+        deptArray.push({name:`${department}` });
+      });
     inquirer
       .prompt([
         {
           name: 'deletedDept',
-          type: 'input',
+          type: 'rawlist',
+          choices: deptArray,
           message: 'Which department do you want to delete?',
         },
       ])
@@ -381,14 +388,23 @@ const addEmployees = () => {
           }
         );
       });
+    })
   };
 
   const deleteRoles = () => {
+    const query = 'SELECT * FROM roles'
+    connection.query(query, (err, results) => {
+      if (err) throw err;
+      let roleArray = [];
+      results.forEach(({ title }) => {
+        roleArray.push({name:`${title}` });
+      });
     inquirer
       .prompt([
         {
           name: 'deletedRole',
-          type: 'input',
+          type: 'rawlist',
+          choices: roleArray,
           message: 'Which role do you want to delete?',
         },
       ])
@@ -403,27 +419,37 @@ const addEmployees = () => {
           }
         );
       });
+    })
   };
 
   const deleteEmployees = () => {
+    const query = 'SELECT * FROM employees'
+    connection.query(query, (err, results) => {
     inquirer
       .prompt([
         {
           name: 'deletedEmployee',
-          type: 'input',
-          message: 'Which role do you want to delete?',
+          type: 'rawlist',
+          choices() {
+            const employeeArray = [];
+            results.forEach(({ first_name, last_name, id }) => {
+              employeeArray.push({ name: `${first_name} ${last_name}`, value: `${id}` });
+            });
+            return employeeArray;
+          },
+          message: 'Who do you want to delete?',
         },
       ])
       .then((answer) => {
         connection.query(
           'DELETE FROM employees WHERE id = ?',
-          [answer.deletedRole],
+          [answer.deletedEmployee],
           (err) => {
             if (err) throw err;
-            console.log('Role was deleted successfully!');
+            console.log('Employee was deleted successfully!');
             start();
           }
         );
       });
+    })
   };
-

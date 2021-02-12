@@ -20,6 +20,8 @@ INSERT INTO employees (first_name, last_name, role_id)
 VALUES ("Candice", "Zhang",2);
 
 INSERT INTO employees (first_name, last_name, role_id, manager_id)
-VALUES ("John", "Smith", 3, 2);
+VALUES ("John", "Smith", 3, 1);
 
+INSERT INTO employees (first_name, last_name, role_id, manager_id)
+VALUES ("Aaron", " Ye", 1, 1;
 
